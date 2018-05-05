@@ -33,10 +33,9 @@ void Helpers::Init() {
 	AllocConsole();
 	AttachConsole(GetProcessId(GetCurrentProcess()));
 	freopen("CON", "w", stdout);
-	SetConsoleTitleA("Zm_By_Syc0x00");
 
+	SetConsoleTitleA("Zm By Syc0x00");
 	Console::Log("Console initialized");
-
 	return;
 }
 
