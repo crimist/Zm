@@ -42,8 +42,8 @@ void Renderer::DrawScene() {
 		}
 
 		if (Menu::GetInstance()->oHealth) {
-			int *HealthPtr = reinterpret_cast<int *>(0x21C1568);
-			int *MaxHealthPtr = reinterpret_cast<int *>(0x2347C6C);
+			int *HealthPtr = reinterpret_cast<int *>(OFFSET_HEALTH);
+			int *MaxHealthPtr = reinterpret_cast<int *>(OFFSET_MAXHEALTH);
 			float HealthPercent = ((float)*HealthPtr / (float)*MaxHealthPtr) * 100.f;
 
 			ImU32 color;
@@ -56,8 +56,16 @@ void Renderer::DrawScene() {
 			else
 				color = ImColor(255, 255, 255, 255); // White
 
-			ImGui::GetWindowDrawList()->AddRect(ImVec2(15, 830), ImVec2(200, 890), ImColor(255, 0, 0, 255), 10);
-			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(15, 830), ImVec2(2 * HealthPercent, 890), color, 10);
+			ImGui::GetWindowDrawList()->AddRect(
+				ImVec2(round(Offsets::Screen->Width * .008), round(Offsets::Screen->Height * .744)),
+				ImVec2(round(Offsets::Screen->Width * .104), round(Offsets::Screen->Height * .8)),
+				ImColor(255, 0, 0, 255),
+				10);
+			ImGui::GetWindowDrawList()->AddRectFilled(
+				ImVec2(round(Offsets::Screen->Width * .008), round(Offsets::Screen->Height * .744)),
+				ImVec2(2 * HealthPercent, round(Offsets::Screen->Height * .8)),
+				color, 
+				10);
 		}
 	}
 
@@ -105,6 +113,8 @@ void Renderer::DrawScene() {
 						y1 = screen.y - (100 / (distance * (0.0025f / *zoom)));
 						x2 = screen.x + (20 / (distance * (0.0025f / *zoom)));
 						y2 = screen.y; // Botom of rect doesn't need to change
+
+						// ESP
 						ImGui::GetWindowDrawList()->AddRect(ImVec2(x1, y1), ImVec2(x2, y2), ImColor(255, 0, 0, 255));
 						// Snaplines
 						ImGui::GetWindowDrawList()->AddLine(ImVec2(io.DisplaySize.x / 2, io.DisplaySize.y), ImVec2(screen.x, screen.y), ImColor(255, 0, 0, 255), 1.f);
@@ -122,14 +132,35 @@ void Renderer::DrawScene() {
 							color = ImColor(255, 255, 255, 255); // White
 
 						// Annoying math here
+						// Zombie health outline
 						ImGui::GetWindowDrawList()->AddRect(
 							ImVec2(screen.x - (15 / (distance * (0.0025f / *zoom))), y2 - (5 / (distance * (0.0025f / *zoom)))),
 							ImVec2(screen.x + (15 / (distance * (0.0025f / *zoom))), y2),
 							ImColor(255, 0, 0, 255));
+						// Zombie Health colored in
 						ImGui::GetWindowDrawList()->AddRectFilled(
 							ImVec2(screen.x - (15 / (distance * (0.0025f / *zoom))), y2 - (5 / (distance * (0.0025f / *zoom)))),
 							ImVec2(screen.x + (-15.f + (HealthPercent / (3.3325f))) / (distance * (0.0025f / *zoom)), y2),
 							color);
+
+						if (Menu::GetInstance()->oTrigger) {
+							int width = Offsets::Screen->Width / 2;
+							int height = Offsets::Screen->Height / 2;
+
+							if (width >= x1 &&
+								width <= x2 &&
+								height >= y1 &&
+								height <= y2) {
+								//Console::Log("Triggered");
+								
+								static std::chrono::high_resolution_clock::time_point lastShot;
+								long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - lastShot).count();
+								if (duration > Menu::GetInstance()->oTriggerDelay) { // If over 50ms
+									mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+									lastShot = std::chrono::high_resolution_clock::now();
+								}
+							}
+						}
 					}
 				}
 			}
@@ -169,7 +200,7 @@ void Renderer::DrawScene() {
 			bool onscreen = Math::WorldToScreen(pos, screen, viewMatrix);
 
 			if (Menu::GetInstance()->oUnrealAimbot || onscreen) // if its unreal or if the ent is actually onscreen
-				if (!SetCursorPos(screen.x + (10 / (distance * (0.0025f / *zoom))), screen.y - (60 / (distance * (0.0025f / *zoom))))) // 0.0018f / zoom% or 0.0018f * zoom%
+				if (!SetCursorPos(screen.x, screen.y - (60 / (distance * (0.0025f / *zoom))))) // 0.0018f / zoom% or 0.0018f * zoom%
 					Console::Log("Failed to SetCursorPos()");
 		}
 	}

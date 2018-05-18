@@ -14,6 +14,8 @@ public:
 	bool oCrosshair = false;
 	bool oHealth = false;
 	bool oAmmo = false;
+	bool oTrigger = false;
+	int oTriggerDelay = 50;
 	int oWeapon;
 	int oSpeed = 190;
 	int oZmHP = 1;

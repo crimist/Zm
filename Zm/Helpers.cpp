@@ -1,12 +1,18 @@
 #include "stdafx.h"
 #include "Helpers.h"
 
+std::mutex mtx;
+
 void Console::Log(const char *str) {
+	mtx.lock();
 	std::cout << "[+] " << str << std::endl;
+	mtx.unlock();
 }
 
 void Console::Warn(const char *str) {
+	mtx.lock();
 	std::cout << "[!] " << str << std::endl;
+	mtx.unlock();
 }
 
 void Console::Err(const char *str) {
@@ -15,14 +21,18 @@ void Console::Err(const char *str) {
 }
 
 void Console::Address(const char *name, int address) {
+	mtx.lock();
 	std::cout << "[+] " << name << ": 0x" << std::hex << address << std::dec << std::endl;
+	mtx.unlock();
 }
 
 void Console::Bytes(const char *name, int bytes[]) {
+	mtx.lock();
 	std::cout << "[+] " << name << ": " << std::endl;
 	// for size of bytes
 	// print 2 bytes in hex or smt
 	std::cout << std::endl;
+	mtx.unlock();
 }
 
 // Bad code but it works

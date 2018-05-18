@@ -3,12 +3,16 @@
 
 // Pretty common shit
 
+extern std::mutex mtx;
+
 namespace Console {
 	void Log(const char *str);
 	void Warn(const char *str);
 	void Err(const char *str);
 	template <typename T> void Value(const char *name, T value) {
+		mtx.lock();
 		std::cout << "[+] " << name << ": " << value << std::endl;
+		mtx.unlock();
 	}
 	void Address(const char *name, int address);
 	void Bytes(const char *name, int bytes[]);

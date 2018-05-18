@@ -5,11 +5,12 @@
 #include "Helpers.h"
 #include "Math.h"
 
-Menu* Menu::Instance;
+Menu *Menu::Instance;
 Menu::Menu() {
-	this->oToggle = false;
+	//this->oToggle = false;
 	Offsets::gentity_t *self = GetGentity(0);
 	this->oWeapon = self->PlayerInfo->Weapon1ID;
+	strcpy(this->oName, self->PlayerInfo->Name);
 }
 Menu::~Menu() {}
 
@@ -24,6 +25,8 @@ void Menu::Draw() {
 		ImGui::Checkbox("ESP", &oESP); 
 		ImGui::Checkbox("Aimbot", &oAimbot); 
 		ImGui::Checkbox("Unreal Aimbot", &oUnrealAimbot);
+		ImGui::Checkbox("Triggerbot", &oTrigger);
+		ImGui::InputInt("Triggerbot shot delay", &oTriggerDelay);
 		ImGui::Checkbox("Crosshair", &oCrosshair);
 		ImGui::Checkbox("Health", &oHealth);
 		ImGui::Checkbox("Unlimited Ammo", &oAmmo);
@@ -47,11 +50,11 @@ void Menu::Draw() {
 		bool detach = ImGui::Button("Detach (F10)"); // make this do shit
 
 		if (setSpeed) {
-			int *speed = reinterpret_cast<int *>(0x29F1820);
+			int *speed = reinterpret_cast<int *>(OFFSET_SPEED);
 			*speed = oSpeed;
 		}
 		if (resetSpeed) {
-			int *speed = reinterpret_cast<int *>(0x29F1820);
+			int *speed = reinterpret_cast<int *>(OFFSET_SPEED);
 			*speed = 190;
 		}
 		if (setWeapon) {

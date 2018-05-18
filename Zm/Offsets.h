@@ -54,6 +54,7 @@ NameTags			(Failed)			83 EC 68 F3 0F 10 05 ?? ?? ?? ?? 0F 2F 44 24 74 C6 44 24 ?
 #define OFFSET_GENTITY_SIZE 0x31C
 #define OFFSET_ENTITY 0x2E4EDCC0
 #define OFFSET_ENTITY_SIZE 0x380
+#define OFFSET_SPEED 0x29F1820
 
 #define OFFSET_ROUND 0x233B710
 #define OFFSET_HEALTH 0x21C1568
@@ -369,6 +370,7 @@ namespace Offsets {
 #pragma pack(pop)
 
 	// Globals I guess
+	extern HWND SelfWnd;
 	extern Vector3 *Pos;
 	extern ScreenSize *Screen;
 	extern entity_t *Ent;
