@@ -9,7 +9,7 @@ Menu *Menu::Instance;
 Menu::Menu() {
 	//this->oToggle = false;
 	Offsets::gentity_t *self = GetGentity(0);
-	this->oWeapon = self->PlayerInfo->Weapon1ID;
+	this->oWeaponDropdown = self->PlayerInfo->Weapon1ID;
 	strcpy(this->oName, self->PlayerInfo->Name);
 }
 Menu::~Menu() {}
@@ -30,14 +30,12 @@ void Menu::Draw() {
 		ImGui::Checkbox("Crosshair", &oCrosshair);
 		ImGui::Checkbox("Health", &oHealth);
 		ImGui::Checkbox("Unlimited Ammo", &oAmmo);
+		ImGui::Checkbox("ImGUI Debug", &oDebug);
 		bool setAmmo = ImGui::Button("Set Unlimited Ammo");
 
 		ImGui::InputInt("Speed", &oSpeed);
 		bool setSpeed = ImGui::Button("Set Speed");
 		bool resetSpeed = ImGui::Button("Reset Speed");
-
-		ImGui::InputInt("Weapon ID (Add weap list later)", &oWeapon);
-		bool setWeapon = ImGui::Button("Set Weapon");
 
 		bool god = ImGui::Button("Become God");
 
@@ -47,7 +45,17 @@ void Menu::Draw() {
 		ImGui::InputText("Name", oName, IM_ARRAYSIZE(oName));
 		bool setName = ImGui::Button("Set Name");
 
-		bool detach = ImGui::Button("Detach (F10)"); // make this do shit
+		ImGui::Checkbox("Change Weapon2?", &oWeaponChange2);
+		bool wepChanged = ImGui::ListBox("Weapons", &oWeaponDropdown, Offsets::WeaponList, IM_ARRAYSIZE(Offsets::WeaponList), 5);
+
+		if (wepChanged) {
+			Console::Value("oWeaponDropdown", oWeaponDropdown);
+			Offsets::gentity_t *self = GetGentity(0);
+			if (oWeaponChange2)
+				self->PlayerInfo->Weapon2ID = Offsets::WepLookup[oWeaponDropdown];
+			else
+				self->PlayerInfo->Weapon1ID = Offsets::WepLookup[oWeaponDropdown];
+		}
 
 		if (setSpeed) {
 			int *speed = reinterpret_cast<int *>(OFFSET_SPEED);
@@ -56,10 +64,6 @@ void Menu::Draw() {
 		if (resetSpeed) {
 			int *speed = reinterpret_cast<int *>(OFFSET_SPEED);
 			*speed = 190;
-		}
-		if (setWeapon) {
-			Offsets::gentity_t *self = GetGentity(0);
-			self->PlayerInfo->Weapon1ID = (WeaponID)oWeapon;
 		}
 		if (setAmmo) {
 			Offsets::gentity_t *self = GetGentity(0);
@@ -99,6 +103,11 @@ void Menu::Draw() {
 		}
 
 		ImGui::End();
+	}
+
+	if (this->oDebug) {
+		bool val = true;
+		ImGui::ShowMetricsWindow(NULL);
 	}
 }
 

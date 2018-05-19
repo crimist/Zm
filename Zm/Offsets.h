@@ -49,6 +49,7 @@ NameTags			(Failed)			83 EC 68 F3 0F 10 05 ?? ?? ?? ?? 0F 2F 44 24 74 C6 44 24 ?
 #define OFFSET_AMMO 0x2342BC8
 #define OFFSET_PLAYERINFO 0x23427C8
 #define OFFSET_PLAYERINFO_T 0x23427A0
+#define OFFSET_GENTITY_BASE 0x21C13C0 // Same as player but for clairity
 #define OFFSET_GENTITY_PLAYER 0x21C13C0 // Player0
 #define OFFSET_GENTITY_ZOMBIE 0x21C5828 // Zombie0
 #define OFFSET_GENTITY_SIZE 0x31C
@@ -264,13 +265,13 @@ namespace Offsets {
 		pad _0x023C[0x4];		// 0x023C
 		__int32 MaxHealth;		// 0x0240 // xd doesn't work
 		pad _0x0244[0x04];		// 0x0244
-		WeaponID Weapon2ID;		// 0x0248 -> 23429E8
+		__int32 Weapon2ID;		// 0x0248 -> 23429E8
 		pad _0x024C[0x18];		// 0x024C -> 23429EC
-		WeaponID Weapon1ID;		// 0x0264 -> 2342A04
+		__int32 Weapon1ID;		// 0x0264 -> 2342A04
 		pad _0x0268[0x18];		// 0x0268 -> 2342A08
-		WeaponID LethalID;		// 0x0280 -> 2342A20
+		__int32 LethalID;		// 0x0280 -> 2342A20
 		char _0x0284[0x18];		// 0x0284 -> 2342A24
-		WeaponID TacticalID;	// 0x02B8 -> 2342A3C
+		__int32 TacticalID;	// 0x02B8 -> 2342A3C
 		char _0x02BC[0x14C];	// 0x02BC -> 2342A40
 		__int32 Weapon1Stock;	// 0x03F0 -> 2342B8C
 		char _0x03F4[0x4];		// 0x03F4
@@ -375,4 +376,6 @@ namespace Offsets {
 	extern ScreenSize *Screen;
 	extern entity_t *Ent;
 	extern gentity_t *GEnt;
+	extern const char *WeaponList[95];
+	extern int WepLookup[];
 }

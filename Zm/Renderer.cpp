@@ -36,9 +36,11 @@ void Renderer::DrawScene() {
 	if (local->Health > 0) {
 		if (Menu::GetInstance()->oCrosshair) {
 			float *ADS = reinterpret_cast<float *>(0x0103ACA0);
-			ImGui::GetWindowDrawList()->AddCircle(ImVec2(800, 450), 21 * !(*ADS), ImColor(0, 0, 255, 255), 20, 1);
-			ImGui::GetWindowDrawList()->AddCircle(ImVec2(800, 450), 14 * !(*ADS), ImColor(255, 0, 0, 255), 20, 1);
-			ImGui::GetWindowDrawList()->AddCircle(ImVec2(800, 450), 7 * !(*ADS), ImColor(0, 255, 0, 255), 20, 1);
+			
+			ImVec2 middle = ImVec2(Offsets::Screen->Width / 2, Offsets::Screen->Height / 2);
+			ImGui::GetWindowDrawList()->AddCircle(middle, 21 * !(*ADS), ImColor(0, 0, 255, 255), 20, 1);
+			ImGui::GetWindowDrawList()->AddCircle(middle, 14 * !(*ADS), ImColor(255, 0, 0, 255), 20, 1);
+			ImGui::GetWindowDrawList()->AddCircle(middle, 7 * !(*ADS), ImColor(0, 255, 0, 255), 20, 1);
 		}
 
 		if (Menu::GetInstance()->oHealth) {
@@ -89,7 +91,7 @@ void Renderer::DrawScene() {
 	float *zoom = reinterpret_cast<float *>(0x103AD20);
 
 	if (Menu::GetInstance()->oESP || Menu::GetInstance()->oAimbot) {
-		for (int i = 2; i < 1024; i++) { // Ignore ourselves with the starting 1
+		for (int i = 2; i < 1024; i++) { // Ignore ourselves
 			Offsets::gentity_t *ent = GetGentity(i);
 			if (ent->Health > 0 && ent->ClientNum < 1000 && ent->Type == EntityType::ZOMBIE) {
 				Vector3 screen;
@@ -151,11 +153,10 @@ void Renderer::DrawScene() {
 								width <= x2 &&
 								height >= y1 &&
 								height <= y2) {
-								//Console::Log("Triggered");
 								
 								static std::chrono::high_resolution_clock::time_point lastShot;
 								long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - lastShot).count();
-								if (duration > Menu::GetInstance()->oTriggerDelay) { // If over 50ms
+								if (duration > Menu::GetInstance()->oTriggerDelay) {
 									mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 									lastShot = std::chrono::high_resolution_clock::now();
 								}

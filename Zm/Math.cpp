@@ -3,7 +3,7 @@
 #include "Offsets.h"
 
 Offsets::gentity_t *GetGentity(int index) {
-	return (Offsets::gentity_t *)(OFFSET_GENTITY_PLAYER + (index * OFFSET_GENTITY_SIZE));
+	return (Offsets::gentity_t *)(OFFSET_GENTITY_BASE + (index * OFFSET_GENTITY_SIZE));
 }
 
 // Thanks ppl on fourms!

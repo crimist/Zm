@@ -15,11 +15,12 @@ public:
 	bool oHealth = false;
 	bool oAmmo = false;
 	bool oTrigger = false;
+	bool oDebug = false;
 	int oTriggerDelay = 50;
-	int oWeapon;
+	int oWeaponDropdown = 0;
+	bool oWeaponChange2 = false;
 	int oSpeed = 190;
 	int oZmHP = 1;
-
 	char oName[32];
 
 	bool oToggle = false;
