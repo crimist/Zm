@@ -56,6 +56,7 @@ void Helpers::Exit(int timer) {
 	FreeLibraryAndExitThread(g_DLLMOD, 0);
 }
 
+// This needs to be tested
 bool Helpers::KillService(LPCWSTR serviceName) {
 	SC_HANDLE service, scm;
 	SERVICE_STATUS_PROCESS serviceStatus;
@@ -73,13 +74,12 @@ bool Helpers::KillService(LPCWSTR serviceName) {
 		return true;
 	}
 
-	auto result = QueryServiceStatusEx(service, SC_STATUS_PROCESS_INFO, reinterpret_cast<LPBYTE>(&serviceStatus), sizeof(SERVICE_STATUS_PROCESS), &what);
+	bool result = QueryServiceStatusEx(service, SC_STATUS_PROCESS_INFO, reinterpret_cast<LPBYTE>(&serviceStatus), sizeof(SERVICE_STATUS_PROCESS), &what);
 
 	bool ret = true;
 
 	if (serviceStatus.dwCurrentState != SERVICE_STOPPED) {
-		// TODO Kill it
-		if (/*killing it*/ 1 == false)
+		if (ControlService(service, SERVICE_CONTROL_STOP, NULL) == 0)
 			ret = false;
 	}
 
@@ -87,9 +87,9 @@ bool Helpers::KillService(LPCWSTR serviceName) {
 	CloseServiceHandle(scm);
 
 	if (ret == false)
-		std::cout << "Failed to kill BE" << std::endl;
+		std::cout << "Failed to kill " << serviceName << std::endl;
 	else
-		std::cout << "Killed BE" << std::endl;
+		std::cout << "Killed " << serviceName << std::endl;
 
 	return ret;
 }
