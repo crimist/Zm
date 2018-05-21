@@ -29,21 +29,17 @@ void Menu::Draw() {
 		ImGui::InputInt("Triggerbot shot delay", &oTriggerDelay);
 		ImGui::Checkbox("Crosshair", &oCrosshair);
 		ImGui::Checkbox("Health", &oHealth);
-		ImGui::Checkbox("Unlimited Ammo", &oAmmo);
+		bool setAmmo = ImGui::Checkbox("Unlimited Ammo", &oAmmo);
 		ImGui::Checkbox("ImGUI Debug", &oDebug);
-		bool setAmmo = ImGui::Button("Set Unlimited Ammo");
 
-		ImGui::InputInt("Speed", &oSpeed);
-		bool setSpeed = ImGui::Button("Set Speed");
-		bool resetSpeed = ImGui::Button("Reset Speed");
+		bool speedChanged = ImGui::InputInt("Speed", &oSpeed);
+		bool resetSpeed = ImGui::Button("Reset speed to default (190)");
 
-		bool god = ImGui::Button("Become God");
+		bool godMode = ImGui::Button("Set 7000 HP & 60000 Score");
 
-		ImGui::InputInt("Zombie HP", &oZmHP);
-		bool setHP = ImGui::Button("Set Zombies HP");
+		bool hpChanged = ImGui::InputInt("Set Zombie HP", &oZmHP);
 
-		ImGui::InputText("Name", oName, IM_ARRAYSIZE(oName));
-		bool setName = ImGui::Button("Set Name");
+		bool setName = ImGui::InputText("Name", oName, IM_ARRAYSIZE(oName));
 
 		ImGui::Checkbox("Change Weapon2?", &oWeaponChange2);
 		bool wepChanged = ImGui::ListBox("Weapons", &oWeaponDropdown, Offsets::WeaponList, IM_ARRAYSIZE(Offsets::WeaponList), 5);
@@ -57,13 +53,14 @@ void Menu::Draw() {
 				self->PlayerInfo->Weapon1ID = Offsets::WepLookup[oWeaponDropdown];
 		}
 
-		if (setSpeed) {
+		if (speedChanged) {
 			int *speed = reinterpret_cast<int *>(OFFSET_SPEED);
 			*speed = oSpeed;
 		}
 		if (resetSpeed) {
 			int *speed = reinterpret_cast<int *>(OFFSET_SPEED);
 			*speed = 190;
+			oSpeed = *speed;
 		}
 		if (setAmmo) {
 			Offsets::gentity_t *self = GetGentity(0);
@@ -80,7 +77,7 @@ void Menu::Draw() {
 				self->PlayerInfo->Weapon2Clip = originalAmmo2;
 			}
 		}
-		if (god) {
+		if (godMode) {
 			int *health = reinterpret_cast<int *>(OFFSET_HEALTH);
 			int *maxHealth = reinterpret_cast<int *>(OFFSET_MAXHEALTH);
 			int *score = reinterpret_cast<int *>(OFFSET_SCORE);
@@ -88,7 +85,7 @@ void Menu::Draw() {
 			*health = 7000;
 			*score = 60000;
 		}
-		if (setHP) {
+		if (hpChanged) {
 			Console::Log("Omae wa mou shindeiru");
 			for (int i = 2; i < 1024; i++) {
 				Offsets::gentity_t *ent = GetGentity(i);

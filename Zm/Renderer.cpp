@@ -20,57 +20,57 @@ void Renderer::BeginScene() {
 }
 
 void Renderer::DrawScene() {
-	// TODO optimize
 	// Message
 	ImGui::GetWindowDrawList()->AddText(ImGui::GetWindowFont(), 20.f, ImVec2(19.f, 40.f), ImColor(255, 0, 0, 255), "Zm By Syc0x00 Enabled", 0, 0.0f, 0);
-
 	// Dbg info
 	ImGuiIO &io = ImGui::GetIO();
-
 	ImGui::GetWindowDrawList()->AddText(ImGui::GetWindowFont(), 20.f, ImVec2(19.f, 55.f), ImColor(255, 0, 0, 255), Helpers::VariableText("%.fx%.f @ %.f fps %.f ms", io.DisplaySize.x, io.DisplaySize.y, io.Framerate, io.DeltaTime * 1000.f), 0, 0.0f, 0);
 	// Perf info in microseconds
 	float FPSimpact = ((float(this->timeDuration) / 1000.f) * 60.f);
 	ImGui::GetWindowDrawList()->AddText(ImGui::GetWindowFont(), 20.f, ImVec2(19.f, 70.f), ImColor(255, 0, 0, 255), Helpers::VariableText("Impact: %lld mcs %.0f fps", this->timeDuration, FPSimpact));
 
+	// Set vars
 	struct Offsets::gentity_t *local = reinterpret_cast<Offsets::gentity_t *>(OFFSET_GENTITY_PLAYER);
-	if (local->Health > 0) {
-		if (Menu::GetInstance()->oCrosshair) {
-			float *ADS = reinterpret_cast<float *>(0x0103ACA0);
-			
-			ImVec2 middle = ImVec2(Offsets::Screen->Width / 2, Offsets::Screen->Height / 2);
-			ImGui::GetWindowDrawList()->AddCircle(middle, 21 * !(*ADS), ImColor(0, 0, 255, 255), 20, 1);
-			ImGui::GetWindowDrawList()->AddCircle(middle, 14 * !(*ADS), ImColor(255, 0, 0, 255), 20, 1);
-			ImGui::GetWindowDrawList()->AddCircle(middle, 7 * !(*ADS), ImColor(0, 255, 0, 255), 20, 1);
-		}
+	if (local->Health < 1) // If we have less than 1 hp ret
+		return;
 
-		if (Menu::GetInstance()->oHealth) {
-			int *HealthPtr = reinterpret_cast<int *>(OFFSET_HEALTH);
-			int *MaxHealthPtr = reinterpret_cast<int *>(OFFSET_MAXHEALTH);
-			float HealthPercent = ((float)*HealthPtr / (float)*MaxHealthPtr) * 100.f;
+	if (Menu::GetInstance()->oCrosshair) {
+		float *ADS = reinterpret_cast<float *>(OFFSET_ADS);
+		ImVec2 middle = ImVec2(Offsets::Screen->Width / 2, Offsets::Screen->Height / 2);
 
-			ImU32 color;
-			if (HealthPercent > 75.f)
-				color = ImColor(0, 255, 0, 255); // Green
-			else if (HealthPercent > 50.f)
-				color = ImColor(255, 255, 0, 255); // Yellow
-			else if (HealthPercent > 25.f)
-				color = ImColor(255, 0, 0, 255); // Red
-			else
-				color = ImColor(255, 255, 255, 255); // White
-
-			ImGui::GetWindowDrawList()->AddRect(
-				ImVec2(round(Offsets::Screen->Width * .008), round(Offsets::Screen->Height * .744)),
-				ImVec2(round(Offsets::Screen->Width * .104), round(Offsets::Screen->Height * .8)),
-				ImColor(255, 0, 0, 255),
-				10);
-			ImGui::GetWindowDrawList()->AddRectFilled(
-				ImVec2(round(Offsets::Screen->Width * .008), round(Offsets::Screen->Height * .744)),
-				ImVec2(2 * HealthPercent, round(Offsets::Screen->Height * .8)),
-				color, 
-				10);
-		}
+		ImGui::GetWindowDrawList()->AddCircle(middle, 21 * !(*ADS), ImColor(0, 0, 255, 255), 20, 1);
+		ImGui::GetWindowDrawList()->AddCircle(middle, 14 * !(*ADS), ImColor(255, 0, 0, 255), 20, 1);
+		ImGui::GetWindowDrawList()->AddCircle(middle, 7 * !(*ADS), ImColor(0, 255, 0, 255), 20, 1);
 	}
 
+	if (Menu::GetInstance()->oHealth) {
+		int *HealthPtr = reinterpret_cast<int *>(OFFSET_HEALTH);
+		int *MaxHealthPtr = reinterpret_cast<int *>(OFFSET_MAXHEALTH);
+		float HealthPercent = ((float)*HealthPtr / (float)*MaxHealthPtr) * 100.f;
+
+		ImU32 color;
+		if (HealthPercent > 75.f)
+			color = ImColor(0, 255, 0, 255); // 75-100 = Green
+		else if (HealthPercent > 50.f)
+			color = ImColor(255, 255, 0, 255); // 50-74 = Yellow
+		else if (HealthPercent > 25.f)
+			color = ImColor(255, 0, 0, 255); // 25-49 = Yellow
+		else
+			color = ImColor(255, 255, 255, 255); // 0-24 = White
+
+		ImGui::GetWindowDrawList()->AddRect(
+			ImVec2(round(Offsets::Screen->Width * .008), round(Offsets::Screen->Height * .744)),
+			ImVec2(round(Offsets::Screen->Width * .104), round(Offsets::Screen->Height * .8)),
+			ImColor(255, 0, 0, 255),
+			10);
+		ImGui::GetWindowDrawList()->AddRectFilled(
+			ImVec2(round(Offsets::Screen->Width * .008), round(Offsets::Screen->Height * .744)),
+			ImVec2(2 * HealthPercent, round(Offsets::Screen->Height * .8)),
+			color, 
+			10);
+	}
+
+	// TODO make this a pointer array so that there's no movs every call
 	float viewMatrix[16];
 	int v = 0;
 	for (int i = 0; i < 64; i = (i + 0x4)) {
@@ -78,34 +78,26 @@ void Renderer::DrawScene() {
 		viewMatrix[v++] = *value;
 	}
 
-	Offsets::gentity_t *self = GetGentity(0);
 	float lowestDist = FLT_MAX;
-	int lowestID = 0;
-	bool ADS = false;
-	if ((GetKeyState(VK_RBUTTON) & 0x100) != 0)
-		ADS = true;
-	float x1;
-	float y1;
-	float x2;
-	float y2;
-	float *zoom = reinterpret_cast<float *>(0x103AD20);
+	float *zoom = reinterpret_cast<float *>(OFFSET_ZOOM);
+	float x1, x2, y1, y2;
+	uint16_t lowestID = UINT16_MAX;
+	bool ADS = ((GetKeyState(VK_RBUTTON) & 0x100) != 0);
 
 	if (Menu::GetInstance()->oESP || Menu::GetInstance()->oAimbot) {
-		for (int i = 2; i < 1024; i++) { // Ignore ourselves
+		for (int i = 1; i < 1024; i++) {
 			Offsets::gentity_t *ent = GetGentity(i);
 			if (ent->Health > 0 && ent->ClientNum < 1000 && ent->Type == EntityType::ZOMBIE) {
-				Vector3 screen;
-				Vector3 pos;
-				pos.x = ent->Position[0];
-				pos.y = ent->Position[1];
-				pos.z = ent->Position[2];
-				float distance = Math::VecDistance(self->Position, ent->Position);
-				if (distance < lowestDist) {
+				Vector3 pos(ent->Position[0], ent->Position[1], ent->Position[2]);
+				float distance = Math::VecDistance(local->Position, ent->Position);
+
+				if (distance < lowestDist) { // Check if it's the closest zombie
 					lowestDist = distance;
 					lowestID = i;
 				}
 
 				if (Menu::GetInstance()->oESP) {
+					Vector3 screen;
 					if (Math::WorldToScreen(pos, screen, viewMatrix)) {
 						// Box
 						int *round = reinterpret_cast<int *>(OFFSET_ROUND);
@@ -120,7 +112,7 @@ void Renderer::DrawScene() {
 						ImGui::GetWindowDrawList()->AddRect(ImVec2(x1, y1), ImVec2(x2, y2), ImColor(255, 0, 0, 255));
 						// Snaplines
 						ImGui::GetWindowDrawList()->AddLine(ImVec2(io.DisplaySize.x / 2, io.DisplaySize.y), ImVec2(screen.x, screen.y), ImColor(255, 0, 0, 255), 1.f);
-						// Dbg
+						// Dbg Info
 						//ImGui::GetWindowDrawList()->AddText(ImVec2(screen.x, screen.y - (100 / (distance * (0.0025f / *zoom)))), ImColor(255, 0, 0, 255), Helpers::VariableText("%d %.2f %.0f/%.0f=%.0f", ent->ClientNum, distance, (float)ent->Health, maxHP, HealthPercent));
 
 						ImU32 color;
@@ -149,11 +141,8 @@ void Renderer::DrawScene() {
 							int width = Offsets::Screen->Width / 2;
 							int height = Offsets::Screen->Height / 2;
 
-							if (width >= x1 &&
-								width <= x2 &&
-								height >= y1 &&
-								height <= y2) {
-								
+							// If the cursor is inside the zombies ESP box
+							if (width >= x1 && width <= x2 && height >= y1 && height <= y2) {
 								static std::chrono::high_resolution_clock::time_point lastShot;
 								long long duration = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - lastShot).count();
 								if (duration > Menu::GetInstance()->oTriggerDelay) {
@@ -171,7 +160,7 @@ void Renderer::DrawScene() {
 			pos.x = ent->Position[0];
 			pos.y = ent->Position[1];
 			pos.z = ent->Position[2];
-			float distance = VecDistance(self->Position, ent->Position);
+			float distance = VecDistance(local->Position, ent->Position);
 
 			if (WorldToScreen(pos, screen, viewMatrix, 1600, 900)) {
 			// Box
@@ -190,14 +179,11 @@ void Renderer::DrawScene() {
 	}
 
 	if (Menu::GetInstance()->oAimbot) {
-		if (ADS && lowestID != 0) { // If they're ADS and closest isn't self
-			Offsets::gentity_t *zombie = GetGentity(lowestID);
-			Vector3 screen;
-			Vector3 pos;
-			pos.x = zombie->Position[0];
-			pos.y = zombie->Position[1];
-			pos.z = zombie->Position[2];
-			float distance = Math::VecDistance(self->Position, zombie->Position);
+		if (ADS && lowestID != UINT16_MAX) { // If you're ADSed and closest isn't self
+			Offsets::gentity_t *closest = GetGentity(lowestID);
+			Vector3 screen, pos(closest->Position[0], closest->Position[1], closest->Position[2]);
+
+			float distance = Math::VecDistance(local->Position, closest->Position);
 			bool onscreen = Math::WorldToScreen(pos, screen, viewMatrix);
 
 			if (Menu::GetInstance()->oUnrealAimbot || onscreen) // if its unreal or if the ent is actually onscreen
