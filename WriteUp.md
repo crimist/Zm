@@ -4,15 +4,13 @@
 
 ### Notes
 
-I should start with the fact that this isn't my first cheat (I lied). I wrote one in C# with a Winforms GUI that just had unlimited health ammo ect. I've also written some ASM hacks for a game called FTL but these were both single player games and I was just cheating health and such.
+I should start with the fact that this isn't my first cheat (I'm a liar). I wrote one in C# with a Winforms GUI that just had unlimited health ammo ect. I've also written some ASM hacks using the lua scripting engine in CE ([Cheat Engine](https://github.com/cheat-engine/cheat-engine)) for a game called FTL but these were both single player 16 bit games and I was just changeing simple memory address / the assembly.
 
-When I say first game cheat I mean first multilayer cheat. The kind people pay money for. My cheat includes wallhack, aimbot, and a couple other features.
-
-I should also note I'm writing all of this after because I didn't realize I had to make a write up :(
+When I say first game cheat I mean first 3D multilayer cheat; the kind people pay money for. My cheat includes wallhack, aimbot, triggerbot, and a couple other features.
 
 ### Very start
 
-My journey started on unknowncheats.me, a cheating forum.
+My journey started on ~~A torrent site where I downloaded the game. Don't worry I already own it so it's not illegal but I didn't want to get banned by the anti cheat when I was testing things at the start.~~ Whoops. I mean I started on [unknowncheats](unknowncheats.me), a game cheating forum that's full of helpful people and source code.
 
 The first thing I did was find some open source cheats to read through to get an idea of what was going on.
 
@@ -20,13 +18,13 @@ Cheats use different Direct X version but they're all quite similar so it was a 
 
 I started to find other Black Ops 2 cheats and started looking at their code. I was on a different version so the offsets and ASM are different I was able to find some structs because of it so it ended up being extremely valueable.
 
-The first major decision I had was the choice between a internal or external cheat. The differences between the two are pretty important.
+The first major decision I had was the choice between a internal or external cheat. The differences between the two are pretty big.
 
-Internal cheats are DLLs that are injected into the victim process and acquire values internal by assigning variables to specific memory addresses `int *health = reinterpret_cast<int *>(0xDEADBEEF)`
+Internal cheats are DLLs that are injected into the victim process and acquire values internal by assigning variables to specific memory addresses `int *value = reinterpret_cast<int *>(0xDEADBEEF)`
 
 On the other hand external cheats run and acquire a windows API handle on the process where they use functions like `ReadProcessMemory()` and `WriteProcessMemory` to change and acquire in game values.
 
-From what I had heard internal cheats were harder to debug but had far better performance than external cheats.
+From what I had heard internal cheats were harder to debug and crash the game if they do anything wrong but have far better performance than external cheats.
 
 Because I was using an aimbot and I had made an external cheat before I decided to make it internal to learn how DLLs work. This proved to be a really good choice.
 
@@ -34,9 +32,9 @@ Because I was using an aimbot and I had made an external cheat before I decided 
 
 ### ViewMatrix
 
-The view matrix is a 4x4 2D array of `float`s that correspond to the view model of your character.
+The view matrix is a 4x4 2D array of floats that correspond to the view model of your character.
 
-In other words `float [4][4]`
+In other words a `float [4][4]`
 
 I needed this because I had found the Vectors (`float x,y,z`) that contained the location of the enemy but I need a way to covert that to screen coordinates.
 
@@ -68,15 +66,17 @@ The part you've (Jeff) all been waiting for; what I learned.
 
 Without further ado, I learned:
 
-* Quite a few C++ tricks. Especially those involving type casting.
+* Quite a few C++ tricks.
+  * The different types of type casting
+  * Threading
 
-* I also learned a lot about using VS and windows C++. I got to say its trash compared to *nix but it's Microsoft; I didn't expect much.
+* A lot about using VS and windows C++. I got to say its trash compared to *nix but it's Microsoft so I didn't expect much.
 
-* I also (this is going to take a while) learned more about the Windows API (`Windows.h`) and how bad it is.
+* Lots about the Windows API (`Windows.h`) and how bad it is.
 
-* I also learned a bit about how visual programs work. I learned how they draw to the screen and what APIs (DirectX) they use.
+* A bit about how visual programs work. I learned how they draw to the screen and what APIs (DirectX) they use.
 
-* Next I gained some experience in game engines and 3D/2D math. It took a while but I learned how games check what's on the screen and convert a 3D environment into the 2D environment you see on screen. This was definitely the hardest thing to wrap my head around as I didn't have an previous experience in where as for the rest I already had some foundation.
+* I gained some experience in game engines and 3D/2D math. It took a while but I learned how games check what's on the screen and convert a 3D environment into the 2D environment you see on screen. This was definitely the hardest thing to wrap my head around as I didn't have an previous experience in where as for the rest I already had some foundation.
 
 * Finally I learned about hooking. A process where you overwrite functions and have them point into your own before executing. This involves allocating memory and then writing an x86_64 `JMP` instruction at the start of the command into your own. It's definitely interesting and I understand a bunch of thing that use that far better now.
 
@@ -85,3 +85,15 @@ Without further ado, I learned:
 ### The end
 
 I had a lot of fun with my IDS. So much to the point where I was up at 3 AM trying to find the memory addresses of offsets so I could reach a breakthrough in the development process. I ended up having so much fun I worked on it for the entire week and a half until I finished it and then I went back to playing games. I'm definitely glad I chose this as my IDS. It involves fields I'm interested and gave me insight into other things I didn't have so much experience in. To truly conclude this IDS taught me a lot and I'm very glad that I chose it. 👍
+
+## Credits
+
+I didn't personally contact anyone via PM when making this but I'd like to reconize some people for their source.
+
+* Unknowncheats: As a whole it was a great resource to find people. I got offsets, functions, some addresses, and some general source code that was invaluable for someone just begining in the 3D world.
+
+* SMBB: I used your R6 internal cheat as an example of how to lay the cheat out and not have it look really bloated. I also used a bunch of you helper functions and such.
+
+* CypherPresents: Great offsets and a couple addresses / AOB for function addys.
+
+* stevemk14ebr: Enums for the weapon list.
