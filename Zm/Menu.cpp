@@ -23,26 +23,29 @@ void Menu::Draw() {
 		ImGui::Begin("Zm Menu");
 
 		ImGui::Checkbox("ESP", &oESP); 
+		ImGui::Checkbox("ESP Health", &oESPHealth);
+		ImGui::Checkbox("Snap Lines", &oSnap);
 		ImGui::Checkbox("Aimbot", &oAimbot); 
 		ImGui::Checkbox("Unreal Aimbot", &oUnrealAimbot);
 		ImGui::Checkbox("Triggerbot", &oTrigger);
 		ImGui::InputInt("Triggerbot shot delay", &oTriggerDelay);
 		ImGui::Checkbox("Crosshair", &oCrosshair);
-		ImGui::Checkbox("Health", &oHealth);
+		ImGui::Checkbox("Healthbox", &oHealth);
 		bool setAmmo = ImGui::Checkbox("Unlimited Ammo", &oAmmo);
 		ImGui::Checkbox("ImGUI Debug", &oDebug);
-
 		bool speedChanged = ImGui::InputInt("Speed", &oSpeed);
 		bool resetSpeed = ImGui::Button("Reset speed to default (190)");
-
 		bool godMode = ImGui::Button("Set 7000 HP & 60000 Score");
-
 		bool hpChanged = ImGui::InputInt("Set Zombie HP", &oZmHP);
-
 		bool setName = ImGui::InputText("Name", oName, IM_ARRAYSIZE(oName));
-
 		ImGui::Checkbox("Change Weapon2?", &oWeaponChange2);
 		bool wepChanged = ImGui::ListBox("Weapons", &oWeaponDropdown, Offsets::WeaponList, IM_ARRAYSIZE(Offsets::WeaponList), 5);
+		bool detach = ImGui::Button("Detach (Doesn't work yet)");
+
+		if (detach) {
+			// Press F10 for their lazy ass
+			Helpers::KeyPress(VK_F10);
+		}
 
 		if (wepChanged) {
 			Console::Value("oWeaponDropdown", oWeaponDropdown);
@@ -86,7 +89,7 @@ void Menu::Draw() {
 			*score = 60000;
 		}
 		if (hpChanged) {
-			Console::Log("Omae wa mou shindeiru");
+			Console::Log("Setting zombie health");
 			for (int i = 2; i < 1024; i++) {
 				Offsets::gentity_t *ent = GetGentity(i);
 				if (ent->Type == EntityType::ZOMBIE) {

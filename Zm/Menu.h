@@ -10,6 +10,8 @@ public:
 	// Cheat options
 	bool oUnrealAimbot = false;
 	bool oESP = false;
+	bool oESPHealth = false;
+	bool oSnap = false;
 	bool oAimbot = false;
 	bool oCrosshair = false;
 	bool oHealth = false;

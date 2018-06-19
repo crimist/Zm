@@ -201,3 +201,7 @@ int Offsets::WepLookup[] {
 	103,
 	104,
 };
+
+Offsets::gentity_t *GetGentity(int index) {
+	return (Offsets::gentity_t *)(OFFSET_GENTITY_BASE + (index * OFFSET_GENTITY_SIZE));
+}

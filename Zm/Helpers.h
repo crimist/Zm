@@ -31,4 +31,6 @@ public:
 	static void UnhookFunction(PVOID *oFunction, PVOID pDetour);
 
 	static const char *VariableText(const char* format, ...);
+
+	static void KeyPress(unsigned char keyCode);
 };

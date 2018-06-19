@@ -152,3 +152,11 @@ const char *Helpers::VariableText(const char *format, ...) {
 
 	return buffer;
 }
+
+void Helpers::KeyPress(unsigned char keyCode) {
+	Console::Log("Helpers::KeyPress doesn't work");
+	keybd_event(keyCode, 0, 0, 0); //Press down the Key
+	keybd_event(keyCode, 0, KEYEVENTF_KEYUP, 0); //Release the Key
+
+	return;
+}

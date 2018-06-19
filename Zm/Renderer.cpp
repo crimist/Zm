@@ -84,7 +84,7 @@ void Renderer::DrawScene() {
 	uint16_t lowestID = UINT16_MAX;
 	bool ADS = ((GetKeyState(VK_RBUTTON) & 0x100) != 0);
 
-	if (Menu::GetInstance()->oESP || Menu::GetInstance()->oAimbot) {
+	if (Menu::GetInstance()->oESP || Menu::GetInstance()->oAimbot || Menu::GetInstance()->oSnap) {
 		for (int i = 1; i < 1024; i++) {
 			Offsets::gentity_t *ent = GetGentity(i);
 			if (ent->Health > 0 && ent->ClientNum < 1000 && ent->Type == EntityType::ZOMBIE) {
@@ -96,7 +96,7 @@ void Renderer::DrawScene() {
 					lowestID = i;
 				}
 
-				if (Menu::GetInstance()->oESP) {
+				if (Menu::GetInstance()->oESP || Menu::GetInstance()->oSnap) {
 					Vector3 screen;
 					if (Math::WorldToScreen(pos, screen, viewMatrix)) {
 						// Box
@@ -108,10 +108,10 @@ void Renderer::DrawScene() {
 						x2 = screen.x + (20 / (distance * (0.0025f / *zoom)));
 						y2 = screen.y; // Botom of rect doesn't need to change
 
-						// ESP
-						ImGui::GetWindowDrawList()->AddRect(ImVec2(x1, y1), ImVec2(x2, y2), ImColor(255, 0, 0, 255));
-						// Snaplines
-						ImGui::GetWindowDrawList()->AddLine(ImVec2(io.DisplaySize.x / 2, io.DisplaySize.y), ImVec2(screen.x, screen.y), ImColor(255, 0, 0, 255), 1.f);
+						if (Menu::GetInstance()->oESP) // ESP
+							ImGui::GetWindowDrawList()->AddRect(ImVec2(x1, y1), ImVec2(x2, y2), ImColor(255, 0, 0, 255));
+						if (Menu::GetInstance()->oSnap) // Snaplines
+							ImGui::GetWindowDrawList()->AddLine(ImVec2(io.DisplaySize.x / 2, io.DisplaySize.y), ImVec2(screen.x, screen.y), ImColor(255, 0, 0, 255), 1.f);
 						// Dbg Info
 						//ImGui::GetWindowDrawList()->AddText(ImVec2(screen.x, screen.y - (100 / (distance * (0.0025f / *zoom)))), ImColor(255, 0, 0, 255), Helpers::VariableText("%d %.2f %.0f/%.0f=%.0f", ent->ClientNum, distance, (float)ent->Health, maxHP, HealthPercent));
 
@@ -126,16 +126,18 @@ void Renderer::DrawScene() {
 							color = ImColor(255, 255, 255, 255); // White
 
 						// Annoying math here
-						// Zombie health outline
-						ImGui::GetWindowDrawList()->AddRect(
-							ImVec2(screen.x - (15 / (distance * (0.0025f / *zoom))), y2 - (5 / (distance * (0.0025f / *zoom)))),
-							ImVec2(screen.x + (15 / (distance * (0.0025f / *zoom))), y2),
-							ImColor(255, 0, 0, 255));
-						// Zombie Health colored in
-						ImGui::GetWindowDrawList()->AddRectFilled(
-							ImVec2(screen.x - (15 / (distance * (0.0025f / *zoom))), y2 - (5 / (distance * (0.0025f / *zoom)))),
-							ImVec2(screen.x + (-15.f + (HealthPercent / (3.3325f))) / (distance * (0.0025f / *zoom)), y2),
-							color);
+						if (Menu::GetInstance()->oESPHealth) {
+							// Zombie health outline
+							ImGui::GetWindowDrawList()->AddRect(
+								ImVec2(screen.x - (15 / (distance * (0.0025f / *zoom))), y2 - (5 / (distance * (0.0025f / *zoom)))),
+								ImVec2(screen.x + (15 / (distance * (0.0025f / *zoom))), y2),
+								ImColor(255, 0, 0, 255));
+							// Zombie Health colored in
+							ImGui::GetWindowDrawList()->AddRectFilled(
+								ImVec2(screen.x - (15 / (distance * (0.0025f / *zoom))), y2 - (5 / (distance * (0.0025f / *zoom)))),
+								ImVec2(screen.x + (-15.f + (HealthPercent / (3.3325f))) / (distance * (0.0025f / *zoom)), y2),
+								color);
+						}
 
 						if (Menu::GetInstance()->oTrigger) {
 							int width = Offsets::Screen->Width / 2;

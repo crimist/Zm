@@ -2,10 +2,6 @@
 #include "Vectors.h"
 #include "Offsets.h"
 
-Offsets::gentity_t *GetGentity(int index) {
-	return (Offsets::gentity_t *)(OFFSET_GENTITY_BASE + (index * OFFSET_GENTITY_SIZE));
-}
-
 // Thanks ppl on fourms!
 bool Math::WorldToScreen(Vector3 pos, Vector3 &screen, float matrix[16]) {
 	// Matrix-vector Product, multiplying world(eye) coordinates by projection matrix = clipCoords

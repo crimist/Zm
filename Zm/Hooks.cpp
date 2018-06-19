@@ -24,7 +24,6 @@ tWndProc oWndProc = NULL;
 LRESULT CALLBACK hkWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	if (ImGui_ImplDX11_WndProcHandler(hWnd, uMsg, wParam, lParam) && (GetKeyState(VK_DELETE) & 0x0001) != 0) {
 		Menu::GetInstance()->oToggle = true;
-
 		return 1l;
 	}
 

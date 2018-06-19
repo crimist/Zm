@@ -381,3 +381,6 @@ namespace Offsets {
 	extern const char *WeaponList[95];
 	extern int WepLookup[];
 }
+
+// Funcs
+Offsets::gentity_t *GetGentity(int index);
