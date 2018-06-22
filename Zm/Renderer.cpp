@@ -71,12 +71,7 @@ void Renderer::DrawScene() {
 	}
 
 	// TODO make this a pointer array so that there's no movs every call
-	float viewMatrix[16];
-	int v = 0;
-	for (int i = 0; i < 64; i = (i + 0x4)) {
-		float *value = reinterpret_cast<float *>(0x033F0400 + i);
-		viewMatrix[v++] = *value;
-	}
+	float *viewMatrix = reinterpret_cast<float *>(OFFSET_VIEWMATRIX); // This is a float[16]
 
 	float lowestDist = FLT_MAX;
 	float *zoom = reinterpret_cast<float *>(OFFSET_ZOOM);
