@@ -12,7 +12,7 @@ void Input::Thread() { // Have NumLock on
 	Console::Log("Input::Thread() started");
 
 	Vector3 oldPos;
-	SHORT keystate; // while will assume int32 otherwise because cpp
+	SHORT keystate; // while will assume int32 otherwise
 
 	while (1) {
 		if ((keystate = GetKeyState(VK_F9) & 0x8000)) { // F9 teleport to nearest ent on cursur
@@ -20,7 +20,7 @@ void Input::Thread() { // Have NumLock on
 			POINT curs;
 			GetCursorPos(&curs);
 			int closeID = 0;
-			POINT closest = { 0xFFFF, 0xFFFF }; // I hope no one has a display over 65535x65535 pixels
+			POINT closest = { 0xFFFF, 0xFFFF }; // I hope no one has a display over 65535x65535p
 
 			float viewMatrix[16];
 			int v = 0;
@@ -29,7 +29,7 @@ void Input::Thread() { // Have NumLock on
 				viewMatrix[v++] = *base;
 			}
 
-			for (int i = 20; i < 200; i++) { // Ignore ourselves with the starting 1
+			for (int i = 20; i < 200; i++) { // Zombies don't start till 20
 				Offsets::gentity_t *ent = GetGentity(i);
 				if (ent->Health > 0 && ent->Type == EntityType::ZOMBIE) {
 					Vector3 screen;

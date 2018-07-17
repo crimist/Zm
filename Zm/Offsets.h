@@ -64,6 +64,8 @@ NameTags			(Failed)			83 EC 68 F3 0F 10 05 ?? ?? ?? ?? 0F 2F 44 24 74 C6 44 24 ?
 #define OFFSET_SCORE 0x2347D68
 #define OFFSET_POSITION 0x23427C8
 
+#define WNDNAME L"Call of Duty®: Black Ops II - Zombies"
+
 #pragma region Enums
 enum WeaponID : __int32 {
 	defaultweapon_mp = 1,

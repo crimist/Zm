@@ -33,4 +33,5 @@ public:
 	static const char *VariableText(const char* format, ...);
 
 	static void KeyPress(unsigned char keyCode);
-};
+    static ImU32 ColorGradient(float value);
+    static ImU32 ColorGradient(int value);

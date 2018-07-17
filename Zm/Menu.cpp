@@ -43,8 +43,7 @@ void Menu::Draw() {
 		bool detach = ImGui::Button("Detach (Doesn't work yet)");
 
 		if (detach) {
-			// Press F10 for their lazy ass
-			Helpers::KeyPress(VK_F10);
+			Helpers::KeyPress(VK_F10); // Broken
 		}
 
 		if (wepChanged) {

@@ -21,6 +21,8 @@ RegisterTag oRegisterTag = NULL;
 tGetTagPos oGetTagPos = NULL;
 tWndProc oWndProc = NULL;
 
+// This detaches the cursor from the window so that we can click things
+// within the cheats ImGUI GUI
 LRESULT CALLBACK hkWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	if (ImGui_ImplDX11_WndProcHandler(hWnd, uMsg, wParam, lParam) && (GetKeyState(VK_DELETE) & 0x0001) != 0) {
 		Menu::GetInstance()->oToggle = true;
@@ -54,13 +56,11 @@ ID3D11RenderTargetView *pRenderTargetView = NULL;
 
 bool firstTime = true;
 
-// I just spent 6+ hours debugging why this was only called once only to find that it's cause RTSS
-// conflicts with D3D hooking fml
+// RTSS and other OSDs will conflict with this hooking
 HRESULT __stdcall Hooks::hkD3D11Present(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
 	if (firstTime) {
 		Console::Log("hkD3D11Present Called");
-		HWND hWindow = FindWindow(NULL, L"Call of Duty®: Black Ops II - Zombies");
-		if (hWindow == NULL)
+		if (Offsets::SelfWnd == NULL)
 			Console::Err("Failed to find Window");
 
 		if (SUCCEEDED(pSwapChain->GetDevice(__uuidof(ID3D11Device), (void **)&pDevice))) {
@@ -76,7 +76,7 @@ HRESULT __stdcall Hooks::hkD3D11Present(IDXGISwapChain* pSwapChain, UINT SyncInt
 			renderTargetTexture->Release();
 		}
 
-		ImGui_ImplDX11_Init(hWindow, pDevice, pContext);
+		ImGui_ImplDX11_Init(Offsets::SelfWnd, pDevice, pContext);
 		ImGui_ImplDX11_CreateDeviceObjects();
 
 		firstTime = false;
@@ -99,17 +99,17 @@ HRESULT __stdcall Hooks::hkD3D11Present(IDXGISwapChain* pSwapChain, UINT SyncInt
 void Hooks::Init() {
 	Console::Log("D3D::Init()");
 
-	Helpers::KillProc(L"RTSS.exe"); // RTSS conflics with the D3D11Present hook 
+	// I found out these conflict the hard way (6 hours)
+	Helpers::KillProc(L"RTSS.exe");
 	Helpers::KillProc(L"EncoderServer.exe");
 	Helpers::KillProc(L"EncoderServer64.exe");
 	Helpers::KillProc(L"RTSSHooksLoader.exe");
 	Helpers::KillProc(L"RTSSHooksLoader64.exe");
-	// Kill (or bypass if ur cool) any anti cheat here too (ex: battleye/vac)
+	// Bypass or kill any anti cheat here too (ex: battleye/vac)
 
 	D3D_FEATURE_LEVEL featureLevel = D3D_FEATURE_LEVEL_11_0;
 
-	HWND hWindow = FindWindow(NULL, L"Call of Duty®: Black Ops II - Zombies");
-	if (hWindow == NULL)
+	if (Offsets::SelfWnd == NULL)
 		Console::Err("Failed to find Window");
 
 	DXGI_SWAP_CHAIN_DESC scd;
@@ -127,14 +127,16 @@ void Hooks::Init() {
 	scd.SampleDesc.Quality = 0;
 	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	scd.BufferCount = 2;
-	scd.OutputWindow = hWindow;
-	scd.Windowed = ((GetWindowLongPtr(hWindow, GWL_STYLE) & WS_POPUP) != 0) ? false : true; // check if our game is windowed
+	scd.OutputWindow = Offsets::SelfWnd;
+	scd.Windowed = ((GetWindowLongPtr(Offsets::SelfWnd, GWL_STYLE) & WS_POPUP) != 0) ? false : true; // check if our game is windowed
 	scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 	// Also based on API Monitoring I did
-	// Btw this shit ran thru nvapi cause optimus maybe? idk. anyway nvapi just does 1 arg and
-	// then passes it thru anyway
+	// Bonus: this ran through NvAPI which might have been because of
+	// optimus since I was using my laptop. Harmless since NvAPI
+	// just sets and arg and passes it through but interesting.
+	// Should test on 1080Ti.
 	if (FAILED(D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, 0, &featureLevel,
 							1, D3D11_SDK_VERSION/*7*/, &scd, &pSwapChain, &pDevice, 0, &pContext))) {
 		Console::Warn("D3D11CreateDeviceAndSwapChain() failed");
@@ -142,6 +144,7 @@ void Hooks::Init() {
 	} else
 		Console::Log("D3D11CreateDeviceAndSwapChain() Success");
 
+	// Get func addresses
 	Console::Address("pDevice", reinterpret_cast<int32_t>(pDevice));
 	Console::Address("pContext", reinterpret_cast<int32_t>(pContext));
 	Console::Address("pSwapChain", reinterpret_cast<int32_t>(pSwapChain));
@@ -163,19 +166,20 @@ void Hooks::Init() {
 	Console::Address("D3D11CONTEXT", pContextVT[12]);
 	Console::Address("D3D11DEVICE", pDeviceVT[24]);
 
-	// Keep the original func ptr
+	// Save the original func ptrs
 	oPresent = reinterpret_cast<tD3D11Present>(pSwapChainVT[8]/*D3D11PRESENT*/);
 	oRegisterTag = reinterpret_cast<RegisterTag>(0x4AE070);
 	oGetTagPos = reinterpret_cast<tGetTagPos>(0x4A0EF0); // gotta find this shit // this looks to be it
 
 	// Hooks
-	oWndProc = (WNDPROC)SetWindowLongPtr(FindWindow(NULL, L"Call of Duty®: Black Ops II - Zombies"), GWL_WNDPROC, (LONG)(LONG_PTR)hkWndProc);
+	oWndProc = (WNDPROC)SetWindowLongPtr(Offsets::SelfWnd, GWL_WNDPROC, (LONG)(LONG_PTR)hkWndProc);
 	Console::Log("Hooked WndProc");
 	Helpers::HookFunction(reinterpret_cast<PVOID*>(&oPresent), hkD3D11Present);
 	Console::Log("Hooked D3D11Present");
 	Helpers::HookFunction(reinterpret_cast<PVOID*>(&oRegisterTag), hkRegisterTag);
 
-	SHORT keystate; // while will assume int32 otherwise because cpp
+	// Wait until we get an F10
+	SHORT keystate; // while will assume int32 otherwise and not work
 	while (!(keystate = GetKeyState(VK_F10) & 0x8000))
 		Sleep(100);
 
@@ -183,6 +187,6 @@ void Hooks::Init() {
 	Helpers::UnhookFunction(reinterpret_cast<PVOID*>(&oPresent), hkD3D11Present);
 	Console::Log("Unhooked D3D11PRESENT");
 	Helpers::UnhookFunction(reinterpret_cast<PVOID*>(&oRegisterTag), hkRegisterTag);
-	(WNDPROC)SetWindowLongPtr(FindWindow(NULL, L"Call of Duty®: Black Ops II - Zombies"), GWL_WNDPROC, (LONG)(LONG_PTR)oWndProc);
+	(WNDPROC)SetWindowLongPtr(Offsets::SelfWnd, GWL_WNDPROC, (LONG)(LONG_PTR)oWndProc);
 	Console::Log("Unhooked WndProc");
 }

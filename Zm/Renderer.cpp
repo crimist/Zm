@@ -31,6 +31,7 @@ void Renderer::DrawScene() {
 
 	// Set vars
 	struct Offsets::gentity_t *local = reinterpret_cast<Offsets::gentity_t *>(OFFSET_GENTITY_PLAYER);
+
 	if (local->Health < 1) // If we have less than 1 hp ret
 		return;
 
@@ -46,33 +47,34 @@ void Renderer::DrawScene() {
 	if (Menu::GetInstance()->oHealth) {
 		int *HealthPtr = reinterpret_cast<int *>(OFFSET_HEALTH);
 		int *MaxHealthPtr = reinterpret_cast<int *>(OFFSET_MAXHEALTH);
+
+		// Gradient color change green->yellow->red (Needs testing)
+        float healthSmall = fabsf(((float)*HealthPtr / (float)*MaxHealthPtr) - 1);
+        ImU32 color = Helpers::ColorGradient(healthSmall);
+
+        /*
 		float HealthPercent = ((float)*HealthPtr / (float)*MaxHealthPtr) * 100.f;
-
 		ImU32 color;
-		if (HealthPercent > 75.f)
-			color = ImColor(0, 255, 0, 255); // 75-100 = Green
-		else if (HealthPercent > 50.f)
-			color = ImColor(255, 255, 0, 255); // 50-74 = Yellow
-		else if (HealthPercent > 25.f)
-			color = ImColor(255, 0, 0, 255); // 25-49 = Yellow
-		else
-			color = ImColor(255, 255, 255, 255); // 0-24 = White
+        if (HealthPercent > 75.f)
+                color = ImColor(0, 255, 0, 255); // 75-100 = Green
+        else if (HealthPercent > 50.f)
+                color = ImColor(255, 255, 0, 255); // 50-74 = Yellow
+        else if (HealthPercent > 25.f)
+                color = ImColor(255, 0, 0, 255); // 25-49 = Yellow
+        else
+                color = ImColor(255, 255, 255, 255); // 0-24 = White
+        */
 
-		ImGui::GetWindowDrawList()->AddRect(
-			ImVec2(round(Offsets::Screen->Width * .008), round(Offsets::Screen->Height * .744)),
-			ImVec2(round(Offsets::Screen->Width * .104), round(Offsets::Screen->Height * .8)),
-			ImColor(255, 0, 0, 255),
-			10);
-		ImGui::GetWindowDrawList()->AddRectFilled(
-			ImVec2(round(Offsets::Screen->Width * .008), round(Offsets::Screen->Height * .744)),
-			ImVec2(2 * HealthPercent, round(Offsets::Screen->Height * .8)),
-			color, 
-			10);
+        ImGui::GetWindowDrawList()->AddRect(
+            ImVec2(round(Offsets::Screen->Width * .008), round(Offsets::Screen->Height * .744)),
+            ImVec2(round(Offsets::Screen->Width * .104), round(Offsets::Screen->Height * .8)),
+            ImColor(255, 0, 0, 255), 10);
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            ImVec2(round(Offsets::Screen->Width * .008), round(Offsets::Screen->Height * .744)),
+            ImVec2(2 * HealthPercent, round(Offsets::Screen->Height * .8)), color, 10);
 	}
 
-	// TODO make this a pointer array so that there's no movs every call
 	float *viewMatrix = reinterpret_cast<float *>(OFFSET_VIEWMATRIX); // This is a float[16]
-
 	float lowestDist = FLT_MAX;
 	float *zoom = reinterpret_cast<float *>(OFFSET_ZOOM);
 	float x1, x2, y1, y2;
@@ -95,9 +97,6 @@ void Renderer::DrawScene() {
 					Vector3 screen;
 					if (Math::WorldToScreen(pos, screen, viewMatrix)) {
 						// Box
-						int *round = reinterpret_cast<int *>(OFFSET_ROUND);
-						float maxHP = (150.f + (100.f * (*round - 1)));
-						float HealthPercent = ((float)ent->Health / maxHP) * 100.f;
 						x1 = screen.x - (20 / (distance * (0.0025f / *zoom)));
 						y1 = screen.y - (100 / (distance * (0.0025f / *zoom)));
 						x2 = screen.x + (20 / (distance * (0.0025f / *zoom)));
@@ -110,7 +109,18 @@ void Renderer::DrawScene() {
 						// Dbg Info
 						//ImGui::GetWindowDrawList()->AddText(ImVec2(screen.x, screen.y - (100 / (distance * (0.0025f / *zoom)))), ImColor(255, 0, 0, 255), Helpers::VariableText("%d %.2f %.0f/%.0f=%.0f", ent->ClientNum, distance, (float)ent->Health, maxHP, HealthPercent));
 
-						ImU32 color;
+						// Needs testing
+						int *round = reinterpret_cast<int *>(OFFSET_ROUND);
+						float maxHP = (150.f + (100.f * (*round - 1)));
+						float HealthPercent = ((float)ent->Health / maxHP) * 100.f;
+						float healthSmall = fabsf(((float)ent->Health / maxHP) - 1.f);
+						ImU32 color = Helpers::ColorGradient(healthSmall);
+
+						/*
+						int *round = reinterpret_cast<int *>(OFFSET_ROUND);
+						float maxHP = (150.f + (100.f * (*round - 1)));
+						float HealthPercent = ((float)ent->Health / maxHP) * 100.f;
+						ImU32 color
 						if (HealthPercent > 75.f)
 							color = ImColor(0, 255, 0, 255); // Green
 						else if (HealthPercent > 50.f)
@@ -119,7 +129,8 @@ void Renderer::DrawScene() {
 							color = ImColor(255, 0, 0, 255); // Red
 						else
 							color = ImColor(255, 255, 255, 255); // White
-
+						*/
+					
 						// Annoying math here
 						if (Menu::GetInstance()->oESPHealth) {
 							// Zombie health outline
@@ -151,27 +162,26 @@ void Renderer::DrawScene() {
 					}
 				}
 			}
-			/*else if (ent->ModelIndex == 44) { // Its at 518
-			Vector3 screen;
-			Vector3 pos;
-			pos.x = ent->Position[0];
-			pos.y = ent->Position[1];
-			pos.z = ent->Position[2];
-			float distance = VecDistance(local->Position, ent->Position);
+			// Bus
+			else if (ent->ModelIndex == 44) { // Its at 518
+				Vector3 screen;
+				Vector3 pos(ent->Position[0], ent->Position[1], ent->Position[2]);
 
-			if (WorldToScreen(pos, screen, viewMatrix, 1600, 900)) {
-			// Box
-			x1 = screen.x - (20 / (distance * (0.0025f / *zoom)));
-			y1 = screen.y; // top middle of bus
-			x2 = screen.x + (20 / (distance * (0.0025f / *zoom)));
-			y2 = screen.y + (200 / (distance * (0.0025f / *zoom)));
-			ImGui::GetWindowDrawList()->AddRect(ImVec2(x1, y1), ImVec2(x2, y2), ImColor(255, 0, 0, 255));
-			// Snaplines
-			ImGui::GetWindowDrawList()->AddLine(ImVec2(1600 / 2, 900), ImVec2(screen.x, screen.y), ImColor(255, 0, 0, 255), 1.f);
-			// Dbg
-			ImGui::GetWindowDrawList()->AddText(ImVec2(screen.x, screen.y - (100 / (distance * (0.0025f / *zoom)))), ImColor(255, 0, 0, 255), Helpers::VariableText("%d %d %f", ent->ClientNum, ent->ModelIndex, distance));
+				float distance = VecDistance(local->Position, ent->Position);
+
+				if (Math::WorldToScreen(pos, screen, viewMatrix)) {
+					// Box
+					x1 = screen.x - (20 / (distance * (0.0025f / *zoom)));
+					y1 = screen.y; // top middle of bus
+					x2 = screen.x + (20 / (distance * (0.0025f / *zoom)));
+					y2 = screen.y + (200 / (distance * (0.0025f / *zoom)));
+					ImGui::GetWindowDrawList()->AddRect(ImVec2(x1, y1), ImVec2(x2, y2), ImColor(255, 0, 0, 255));
+					// Snaplines
+                    ImGui::GetWindowDrawList()->AddLine(ImVec2(io.DisplaySize.x / 2, io.DisplaySize.y), ImVec2(screen.x, screen.y), ImColor(255, 0, 0, 255), 1.f);
+                    // Dbg
+					ImGui::GetWindowDrawList()->AddText(ImVec2(screen.x, screen.y - (100 / (distance * (0.0025f / *zoom)))), ImColor(255, 0, 0, 255), Helpers::VariableText("Bus %f", distance));
+				}
 			}
-			}*/
 		}
 	}
 

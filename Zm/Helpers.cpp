@@ -154,9 +154,25 @@ const char *Helpers::VariableText(const char *format, ...) {
 }
 
 void Helpers::KeyPress(unsigned char keyCode) {
-	Console::Log("Helpers::KeyPress doesn't work");
+	Console::Log("Helpers::KeyPress doesn't work yet :(");
 	keybd_event(keyCode, 0, 0, 0); //Press down the Key
 	keybd_event(keyCode, 0, KEYEVENTF_KEYUP, 0); //Release the Key
 
 	return;
+}
+
+// Sets a color green->yellow->red based on the
+// amount of health the entity has
+ImU32 Helpers::ColorGradient(float value) {
+    return ImColor(2.0f * value, 2.0f * (1 - value), 0);
+}
+
+/*// Needs testing
+ImU32 Helpers::ColorGradient(int value) {
+	return ImColor(2 * value, 2 * (1 - value), 0);
+}*/
+
+ImU32 Helpers::ColorGradient(int value) {
+	float fValue = value / 100.f;
+    return ImColor(2.0f * fValue, 2.0f * (1 - fValue), 0);
 }
