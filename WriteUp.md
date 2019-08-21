@@ -1,46 +1,44 @@
 # Zm - My first game cheat
 
+This is a write up for my teacher as I chose this as a project in one of my classes. I had to fit specific criteria about what to cover which is why certain sections are there.
+
 ## The beginning
 
 ### Notes
 
-I should start with the fact that this isn't my first cheat (I'm a liar). I wrote one in C# with a Winforms GUI that just had unlimited health ammo ect. I've also written some ASM hacks using the lua scripting engine in CE ([Cheat Engine](https://github.com/cheat-engine/cheat-engine)) for a game called FTL but these were both single player 16 bit games and I was just changeing simple memory address / the assembly.
+I should start with the fact that this isn't my first cheat (I'm a liar). I've written external cheats in C# w/ Winforms that modify memory for unlimited health, ammo, ect. I've also written some ASM hacks using the lua scripting engine in CE ([Cheat Engine](https://github.com/cheat-engine/cheat-engine)) for FTL, Risk of Rain, and some other single player 16 bit games.
 
-When I say first game cheat I mean first 3D multilayer cheat; the kind people pay money for. My cheat includes wallhack, aimbot, triggerbot, and a couple other features.
+When I say first game cheat I mean first 3D multilayer cheat; the kind people pay money for (if you're far better than I am). My cheat includes wallhack, aimbot, triggerbot, and a couple other features.
 
 ### Very start
 
-My journey started on ~~A torrent site where I downloaded the game. Don't worry I already own it so it's not illegal but I didn't want to get banned by the anti cheat when I was testing things at the start.~~ Whoops. I mean I started on [unknowncheats](unknowncheats.me), a game cheating forum that's full of helpful people and source code.
+My journey started on [Unknowncheats](https://unknowncheats.me), a game cheating forum that's full of helpful people and source code. Conveniently enough, it also has a "Black Ops 2" section where you can specifically talk about reversing BO2 so that's where I began to look.
 
-The first thing I did was find some open source cheats to read through to get an idea of what was going on.
+The first thing I stumbled upon was some open source BO2 zombies cheats to read through to get an idea of what was going on. Now, while different cheats use different DX versions, GUI library, ect. it was a good place to start in terms of how to model the cheat and things of that nature.
 
-Cheats use different Direct X version but they're all quite similar so it was a good place to start.
+This turned out to be very helpful because while many of these cheats were on different versions I was able to find some very helpful offsets and structs that I made use of later down the line.
 
-I started to find other Black Ops 2 cheats and started looking at their code. I was on a different version so the offsets and ASM are different I was able to find some structs because of it so it ended up being extremely valueable.
+After familiarizing myself with some of the other cheats for the game I ran into my first major decision, I had a choice between a internal or external cheat. And let me tell you, the differences between the two are pretty big.
 
-The first major decision I had was the choice between a internal or external cheat. The differences between the two are pretty big.
+Internal cheats are DLLs that are injected into the victim process and acquire values internal by assigning variables to specific memory addresses like `int *value = reinterpret_cast<int *>(0xDEADBEEF)`. These kinds of cheats have to find a way to hide themselves in memory or disable / trick the anticheat as the processs could simply read their own memory and discover the rogue DLL.
 
-Internal cheats are DLLs that are injected into the victim process and acquire values internal by assigning variables to specific memory addresses `int *value = reinterpret_cast<int *>(0xDEADBEEF)`
+On the other hand external cheats are PEs that acquire a winAPI handle on the process from which they can use functions like `ReadProcessMemory()` and `WriteProcessMemory` to acquire and modify memory. These kinds of cheats are stopped by blocking or stripping the permission sof the handle that it gets of it's victims process. This can be very easily done by registering a simple Windows Kernel driver.
 
-On the other hand external cheats run and acquire a windows API handle on the process where they use functions like `ReadProcessMemory()` and `WriteProcessMemory` to change and acquire in game values.
+From what I had heard internal cheats were harder to debug as they would crash the host processes if any exceptions occurred but had far better performance than external cheats.
 
-From what I had heard internal cheats were harder to debug and crash the game if they do anything wrong but have far better performance than external cheats.
-
-Because I was using an aimbot and I had made an external cheat before I decided to make it internal to learn how DLLs work. This proved to be a really good choice.
+Knowing that I wanted to write an aimbot, wallhack, and other things of the sort I knew that I would have to go internal so that I could draw on the screen and wouldn't have to deal with performance issues of calling `RPM` 144 times a second just so I could update my aimbot position. From here I started going a bit of research into windows DLL, how they worked, how you could inject them into processes, ect. Looking back now, had I gone internal this project would have just been a frustrating mess. I'm very glad I went internal.
 
 ## Pain Points
 
 ### ViewMatrix
 
-The view matrix is a 4x4 2D array of floats that correspond to the view model of your character.
-
-In other words a `float [4][4]`
+The view matrix is a 4x4 2D array of floats that correspond to the view model of your character. Or, in other words a `float [4][4]`
 
 I needed this because I had found the Vectors (`float x,y,z`) that contained the location of the enemy but I need a way to covert that to screen coordinates.
 
-This proved to be really hard and took 3 hours of reverse engineering and searching memory.
+This proved to be really hard as the game had many places where 2D arrays were updating every frame or every movement which led to many false positives. Though after many hours of search through memory and reversing I did manage to find it with a consistent offset.
 
-### Building a GUI
+### Drawing on screen
 
 Having no experience with 3D graphics I had no idea where to start. I ended up following the example of [this](https://github.com/SMBB/R6-Internal-cheat) project and using [ImGUI](https://github.com/ocornut/imgui).
 
@@ -62,22 +60,16 @@ There were a couple of very minor bugs I couldn't fix because they were more roo
 
 ### 🎉
 
-The part you've (Jeff) all been waiting for; what I learned.
+The part you've (Jeff) been waiting for; what I learned. Without further ado, I learned:
 
-Without further ado, I learned:
-
-* Quite a few C++ tricks.
-  * The different types of type casting
-  * Threading
-
-* A lot about using VS and windows C++. I got to say its trash compared to *nix but it's Microsoft so I didn't expect much.
-
-* Lots about the Windows API (`Windows.h`) and how bad it is.
-
+* A lot about more advanced C++
+* A lot about using VS and windows C++
+  * I much prefer the build process, & types on *nix
+* Lots about the Windows API (`Windows.h`)
+  * I also enjoyed writing with *nix APIs.
+    * For example listening on a socket in windows takes far more code and is far uglier than on *nix
 * A bit about how visual programs work. I learned how they draw to the screen and what APIs (DirectX) they use.
-
 * I gained some experience in game engines and 3D/2D math. It took a while but I learned how games check what's on the screen and convert a 3D environment into the 2D environment you see on screen. This was definitely the hardest thing to wrap my head around as I didn't have an previous experience in where as for the rest I already had some foundation.
-
 * Finally I learned about hooking. A process where you overwrite functions and have them point into your own before executing. This involves allocating memory and then writing an x86_64 `JMP` instruction at the start of the command into your own. It's definitely interesting and I understand a bunch of thing that use that far better now.
 
 ## Conclusion
@@ -88,12 +80,9 @@ I had a lot of fun with my IDS. So much to the point where I was up at 3 AM tryi
 
 ## Credits
 
-I didn't personally contact anyone via PM when making this but I'd like to reconize some people for their source.
+I didn't post on unknowncheats but I'd like to credit a couple people for their contributions to the forum.
 
-* Unknowncheats: As a whole it was a great resource to find people. I got offsets, functions, some addresses, and some general source code that was invaluable for someone just begining in the 3D world.
-
-* SMBB: I used your R6 internal cheat as an example of how to lay the cheat out and not have it look really bloated. I also used a bunch of you helper functions and such.
-
+* Unknowncheats: As a whole it was a great resource to find information. I got offsets, functions, some addresses, and some general source code that was invaluable for someone just beginning in the 3D world.
+* SMBB: I used they're R6 cheat as an example of how to structure the project and make it somewhat readable. I also used a bunch of you helper functions and such.
 * CypherPresents: Great offsets and a couple addresses / AOB for function addys.
-
-* stevemk14ebr: Enums for the weapon list.
+* stevemk14ebr: Enums for the weapon list. Glad I didn't have to manually find them all.

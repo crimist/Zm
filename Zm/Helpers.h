@@ -1,8 +1,6 @@
 #pragma once
 #include "stdafx.h"
 
-// Pretty common shit
-
 extern std::mutex mtx;
 
 namespace Console {
@@ -35,3 +33,4 @@ public:
 	static void KeyPress(unsigned char keyCode);
     static ImU32 ColorGradient(float value);
     static ImU32 ColorGradient(int value);
+}

@@ -48,7 +48,7 @@ signed int _cdecl hkGetTagPos(void *pEntity, DWORD dwMeshResult, int iTag, float
 	return oGetTagPos(pEntity, dwMeshResult, iTag, flOut);
 }
 
-// D3D11 Shit
+// D3D11 stuff
 ID3D11Device *pDevice = NULL;
 ID3D11DeviceContext *pContext = NULL; // ptr 0x0357e288->?
 IDXGISwapChain * pSwapChain = NULL; // ptr 0x035b5da4->?
@@ -169,7 +169,7 @@ void Hooks::Init() {
 	// Save the original func ptrs
 	oPresent = reinterpret_cast<tD3D11Present>(pSwapChainVT[8]/*D3D11PRESENT*/);
 	oRegisterTag = reinterpret_cast<RegisterTag>(0x4AE070);
-	oGetTagPos = reinterpret_cast<tGetTagPos>(0x4A0EF0); // gotta find this shit // this looks to be it
+	oGetTagPos = reinterpret_cast<tGetTagPos>(0x4A0EF0);
 
 	// Hooks
 	oWndProc = (WNDPROC)SetWindowLongPtr(Offsets::SelfWnd, GWL_WNDPROC, (LONG)(LONG_PTR)hkWndProc);

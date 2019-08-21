@@ -9,11 +9,6 @@
 // CypherPresents structs
 // Whoever made "Zombies Hack - BO2" structs 
 
-// shitty Tyepdef i need to delet
-typedef char pad;
-typedef float vec2[2];
-typedef float vec3[3];
-
 // https://www.unknowncheats.me/forum/call-duty-black-ops-2/82221-black-ops-2-update-14-december-2012-a.html
 // + 0xF1C00
 
@@ -43,6 +38,10 @@ NullPointerCamera	(t6zm.exe+52B409)	23 2D ?? ?? ?? ?? 8B 8D ?? ?? ?? ?? 8B C1
 NameTags			(Failed)			83 EC 68 F3 0F 10 05 ?? ?? ?? ?? 0F 2F 44 24 74 C6 44 24 ?? ??
 
 */
+
+typedef char pad;
+typedef float vec2[2];
+typedef float vec3[3];
 
 #define OFFSET_VIEWMATRIX 0x33F0400
 #define OFFSET_ZCOUNT 0x2330388
